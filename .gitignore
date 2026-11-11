@@ -1,0 +1,46 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+
+# Build do Next.js
+.next/
+.build/
+out/
+build/
+dist/
+
+# Variáveis de ambiente (nunca versionar)
+.env
+.env*.local
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.logs/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Diversos
+.cache/
+coverage/
+uploads/
+next.config.user.json
+*.pem
+.vercel

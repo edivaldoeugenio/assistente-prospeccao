@@ -1,0 +1,159 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  name           String?
+  passwordHash       String
+  mustChangePassword Boolean         @default(false)
+  createdAt          DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  companies      Company[]
+  opportunities  Opportunity[]
+  drafts         MessageDraft[]
+  conversations  Conversation[]
+  doNotContact   DoNotContact[]
+  proposals      Proposal[]
+  settings       UserSettings?
+}
+
+model Company {
+  id             String          @id @default(cuid())
+  placeId        String?         @unique
+  name           String
+  segment        String?
+  city           String?
+  state          String?
+  phone          String?
+  website        String?
+  address        String?
+  rating         Float?
+  totalRatings   Int?
+  hasWebsite     Boolean         @default(false)
+  hasSocialOnly  Boolean         @default(false)
+  oldWebsite     Boolean         @default(false)
+  potentialLevel String          @default("medio")
+  notes          String?
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  opportunity    Opportunity?
+  doNotContact   DoNotContact?
+  drafts         MessageDraft[]
+  conversations  Conversation[]
+  proposals      Proposal[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([placeId])
+}
+
+model Opportunity {
+  id         String   @id @default(cuid())
+  stage      String   @default("novo")
+  companyId  String   @unique
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([stage])
+}
+
+model MessageDraft {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  channel     String
+  subject     String?
+  body        String
+  sentAt      DateTime?
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  sender    String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@index([userId])
+}
+
+model DoNotContact {
+  id        String   @id @default(cuid())
+  companyId String   @unique
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Proposal {
+  id        String         @id @default(cuid())
+  companyId String
+  company   Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  title     String?
+  status    String         @default("rascunho")
+  items     ProposalItem[]
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+}
+
+model ProposalItem {
+  id          String   @id @default(cuid())
+  proposalId  String
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float
+  createdAt   DateTime @default(now())
+
+  @@index([proposalId])
+}
+
+model UserSettings {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id])
+  dailyDraftLimit Int     @default(10)
+  messageTone     String  @default("amigavel")
+  userName        String  @default("")
+  userServices    String  @default("")
+  userPhone       String  @default("")
+  userEmail       String  @default("")
+  googlePlacesKey String  @default("")
+  transparentAi   Boolean @default(true)
+}
